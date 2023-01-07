@@ -34,4 +34,10 @@ Using the tool is easy:
 $ node dist/hg.js ai edit 'Fix translation errors' "This wek is good"
 This week is good
 
+$ node dist/hg.js ai comp 'I would like to...'
+
+
+1. Learn a new language
+2. Explore a new country
+
 ```
