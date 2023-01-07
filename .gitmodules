@@ -1,4 +1,8 @@
-[submodule "/Users/jhh/tmp/hg/src/fi/hg/core"]
-	path = /Users/jhh/tmp/hg/src/fi/hg/core
-	url = https://github.com/heusalagroup/fi.hg.core.git
+[submodule "src/fi/hg/core"]
+	path = src/fi/hg/core
+	url = git@github.com:heusalagroup/fi.hg.core.git
+	branch = main
+[submodule "src/fi/hg/node"]
+	path = src/fi/hg/node
+	url = git@github.com:heusalagroup/fi.hg.node.git
 	branch = main
