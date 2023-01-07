@@ -5,10 +5,7 @@ import { ProcessUtils } from "./fi/hg/core/ProcessUtils";
 // Must be first import to define environment variables before anything else
 ProcessUtils.initEnvFromDefaultFiles();
 
-import {
-    COMMAND_NAME,
-    LOG_LEVEL
-} from "./constants/runtime";
+import { COMMAND_NAME, LOG_LEVEL } from "./constants/runtime";
 
 import { LogService } from "./fi/hg/core/LogService";
 import { LogLevel } from "./fi/hg/core/types/LogLevel";
@@ -30,6 +27,11 @@ import { HgAiCommandService } from "./fi/hg/core/cmd/ai/HgAiCommandService";
 import { HttpOpenAiClient } from "./fi/hg/core/openai/HttpOpenAiClient";
 import { OpenAiClient } from "./fi/hg/core/openai/OpenAiClient";
 import { HgNode } from "./fi/hg/node/HgNode";
+import { NodeRequestClient } from "./fi/hg/node/requestClient/node/NodeRequestClient";
+
+LogService.setLogLevel(LOG_LEVEL);
+ProcessUtils.setLogLevel(LOG_LEVEL);
+NodeRequestClient.setLogLevel(LOG_LEVEL >= LogLevel.INFO ? LogLevel.NONE : LOG_LEVEL);
 
 const LOG = LogService.createLogger('main');
 
