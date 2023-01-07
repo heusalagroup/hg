@@ -1,5 +1,5 @@
 {
-  "name": "hg",
+  "name": "@heusalagroup/hg",
   "version": "0.0.1",
   "description": "HG command line tools",
   "main": "dist/hg.js",
@@ -13,12 +13,16 @@
     "typescript",
     "bin",
     "shell",
+    "gpt",
+    "chatgpt",
+    "openai",
+    "ai",
     "command",
     "cli",
     "nodejs"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Heusala Group <info@hg.fi>",
+  "license": "MIT",
   "private": true,
   "bin": {
     "hg": "dist/hg.js"
