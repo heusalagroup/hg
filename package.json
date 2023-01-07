@@ -9,6 +9,14 @@
     "start": "ts-node src/hg.ts",
     "build": "rollup -c"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heusalagroup/hg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heusalagroup/hg/issues"
+  },
+  "homepage": "https://github.com/heusalagroup/hg#readme",
   "keywords": [
     "typescript",
     "bin",
@@ -23,7 +31,6 @@
   ],
   "author": "Heusala Group <info@hg.fi>",
   "license": "MIT",
-  "private": true,
   "bin": {
     "hg": "dist/hg.js"
   },
