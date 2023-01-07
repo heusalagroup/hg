@@ -1,33 +1,33 @@
 // Copyright (c) 2023. Heusala Group <info@heusalagroup.fi>. All rights reserved.
 
 import { ProcessUtils } from "./fi/hg/core/ProcessUtils";
-
-// Must be first import to define environment variables before anything else
-ProcessUtils.initEnvFromDefaultFiles();
-
 import { COMMAND_NAME, LOG_LEVEL } from "./constants/runtime";
 
 import { LogService } from "./fi/hg/core/LogService";
 import { LogLevel } from "./fi/hg/core/types/LogLevel";
-
-LogService.setLogLevel(LOG_LEVEL);
-ProcessUtils.setLogLevel(LOG_LEVEL);
-
 import { CommandExitStatus } from "./fi/hg/core/cmd/types/CommandExitStatus";
 import { RequestClient } from "./fi/hg/core/RequestClient";
-import { CommandArgumentUtils } from "./fi/hg/core/cmd/utils/CommandArgumentUtils";
+import { ArgumentType, CommandArgumentUtils } from "./fi/hg/core/cmd/utils/CommandArgumentUtils";
 import { ParsedCommandArgumentStatus } from "./fi/hg/core/cmd/types/ParsedCommandArgumentStatus";
 import { Headers } from "./fi/hg/core/request/Headers";
 import { BUILD_USAGE_URL, BUILD_WITH_FULL_USAGE } from "./constants/build";
 import { HgCommandServiceImpl } from "./fi/hg/core/cmd/hg/HgCommandServiceImpl";
 import { HgCommandService } from "./fi/hg/core/cmd/hg/HgCommandService";
-import { parseNonEmptyString } from "./fi/hg/core/types/String";
+import { isString, parseNonEmptyString } from "./fi/hg/core/types/String";
 import { HgAiCommandServiceImpl } from "./fi/hg/core/cmd/ai/HgAiCommandServiceImpl";
 import { HgAiCommandService } from "./fi/hg/core/cmd/ai/HgAiCommandService";
 import { HttpOpenAiClient } from "./fi/hg/core/openai/HttpOpenAiClient";
 import { OpenAiClient } from "./fi/hg/core/openai/OpenAiClient";
 import { HgNode } from "./fi/hg/node/HgNode";
 import { NodeRequestClient } from "./fi/hg/node/requestClient/node/NodeRequestClient";
+import { isNumber } from "./fi/hg/core/types/Number";
+import { isBoolean } from "./fi/hg/core/types/Boolean";
+
+// Must be first import to define environment variables before anything else
+ProcessUtils.initEnvFromDefaultFiles();
+
+LogService.setLogLevel(LOG_LEVEL);
+ProcessUtils.setLogLevel(LOG_LEVEL);
 
 LogService.setLogLevel(LOG_LEVEL);
 ProcessUtils.setLogLevel(LOG_LEVEL);
@@ -51,7 +51,32 @@ export async function main (
 
         LOG.debug(`Loglevel as ${LogService.getLogLevelString()}`);
 
-        const {scriptName, parseStatus, exitStatus, errorString, freeArgs} = CommandArgumentUtils.parseArguments(COMMAND_NAME, args);
+        const {
+            scriptName,
+            parseStatus,
+            exitStatus,
+            errorString,
+            freeArgs,
+            userArgs
+        } = CommandArgumentUtils.parseArguments(
+            COMMAND_NAME,
+            args,
+            {
+                'model'            : [ArgumentType.STRING, '--model',              '-m'],
+                'suffix'           : [ArgumentType.STRING, '--suffix',             '-i'],
+                'stop'             : [ArgumentType.STRING, '--stop',               '-s'],
+                'user'             : [ArgumentType.STRING, '--user',               '-u'],
+                'logProbs'         : [ArgumentType.INTEGER, '--logprobs',           '-l'],
+                'bestOf'           : [ArgumentType.INTEGER, '--best-of',             '-b'],
+                'presencePenalty'  : [ArgumentType.NUMBER, '--presence-penalty',   '-r'],
+                'frequencyPenalty' : [ArgumentType.NUMBER, '--frequency-penalty',  '-f'],
+                'echo'             : [ArgumentType.BOOLEAN, '--echo',               '-e'],
+                'n'                : [ArgumentType.INTEGER, '--n',                  '-n'],
+                'topP'             : [ArgumentType.NUMBER, '--top-p',               '-p'],
+                'temperature'      : [ArgumentType.NUMBER, '--temperature',        '-t'],
+                'maxTokens'        : [ArgumentType.INTEGER, '--max-tokens',          '-x'],
+            }
+        );
 
         if ( parseStatus === ParsedCommandArgumentStatus.HELP || parseStatus === ParsedCommandArgumentStatus.VERSION ) {
             console.log(getMainUsage(scriptName));
@@ -72,19 +97,30 @@ export async function main (
         });
 
         const aiClient : OpenAiClient = new HttpOpenAiClient(OPENAI_API_KEY);
-
         const ai : HgAiCommandService = new HgAiCommandServiceImpl(aiClient);
 
+        if (isString(userArgs?.model)) ai.setModel(userArgs?.model);
+        // if (isString(userArgs?.suffix)) ai.setSuffix(userArgs?.suffix);
+        if (isString(userArgs?.stop)) ai.setStop(userArgs?.stop);
+        if (isString(userArgs?.user)) ai.setUser(userArgs?.user);
+        if (isNumber(userArgs?.logProbs)) ai.setLogProbs(userArgs?.logProbs);
+        if (isNumber(userArgs?.bestOf)) ai.setBestOf(userArgs?.bestOf);
+        if (isNumber(userArgs?.presencePenalty)) ai.setPresencePenalty(userArgs?.presencePenalty);
+        if (isNumber(userArgs?.frequencyPenalty)) ai.setFrequencyPenalty(userArgs?.frequencyPenalty);
+        if (isBoolean(userArgs?.echo)) ai.setEcho(userArgs?.echo);
+        if (isNumber(userArgs?.n)) ai.setN(userArgs?.n);
+        if (isNumber(userArgs?.topP)) ai.setTopP(userArgs?.topP);
+        if (isNumber(userArgs?.temperature)) ai.setTemperature(userArgs?.temperature);
+        if (isNumber(userArgs?.maxTokens)) ai.setMaxTokens(userArgs?.maxTokens);
+
         const hg : HgCommandService = new HgCommandServiceImpl(ai);
-
         const ret = await hg.main(freeArgs);
-
         if (ret === CommandExitStatus.USAGE) {
             console.log(getMainUsage(scriptName));
             return CommandExitStatus.USAGE;
         }
-
         return ret;
+
     } catch (err) {
         LOG.error(`Fatal error: `, err);
         return CommandExitStatus.FATAL_ERROR;
@@ -110,9 +146,27 @@ export function getMainUsage (
   
 ...and OPT is one of:
 
-    -h --help          Print help
-    -v --version       Print version
-    --                 Disables option parsing
+    -h --help                Print help
+    -v --version             Print version
+    --                       Disables option parsing
+
+...and 'hg ai' options are:
+
+    -m --model=NAME             OpenAI Model to use
+    -i --suffix=STR             Text that comes after completion of inserted text
+    -s --stop=STR               Up to 4 sequences where the API will stop
+    -u --user=STR               Unique identifier representing your end-user
+    -l --logprobs=INT           Include the log probabilities
+    -b --best-of=INT            Amount of completions to generate server-side
+    -r --presence-penalty=NUM   Presence penalty between -2.0 and 2.0
+    -f --frequency-penalty=NUM  Frequency penalty between -2.0 and 2.0
+    -e --echo[=false]           Echo back the prompt in addition
+    -n --n=INT                  How many completions to generate for each prompt
+    -p --top-p=NUM              Alternative sampling temperature
+    -t --temperature=NUM        Sampling temperature
+    -x --max-tokens=INT         Maximum number of tokens to generate
+
+...and ARG is one of:
 
   Environment variables:
 

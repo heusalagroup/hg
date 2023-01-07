@@ -65,3 +65,20 @@ $ node dist/hg.js ai comp 'I would like to...'
 2. Explore a new country
 
 ```
+
+You can also customize the settings:
+
+````shell
+$ hg ai --model='code-davinci-edit-001' --temperature=0 --max-tokens=50 edit 'Write a function in python that calculates fibonacci'
+def fibonacci(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(10))
+
+````
+
