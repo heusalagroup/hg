@@ -1,6 +1,6 @@
 {
   "name": "@heusalagroup/hg",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "HG command line tools",
   "main": "dist/hg.js",
   "scripts": {

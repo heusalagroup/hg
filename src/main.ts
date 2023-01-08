@@ -62,19 +62,20 @@ export async function main (
             COMMAND_NAME,
             args,
             {
-                'model'            : [ArgumentType.STRING, '--model',              '-m'],
-                'suffix'           : [ArgumentType.STRING, '--suffix',             '-i'],
-                'stop'             : [ArgumentType.STRING, '--stop',               '-s'],
-                'user'             : [ArgumentType.STRING, '--user',               '-u'],
-                'logProbs'         : [ArgumentType.INTEGER, '--logprobs',           '-l'],
-                'bestOf'           : [ArgumentType.INTEGER, '--best-of',             '-b'],
-                'presencePenalty'  : [ArgumentType.NUMBER, '--presence-penalty',   '-r'],
-                'frequencyPenalty' : [ArgumentType.NUMBER, '--frequency-penalty',  '-f'],
-                'echo'             : [ArgumentType.BOOLEAN, '--echo',               '-e'],
-                'n'                : [ArgumentType.INTEGER, '--n',                  '-n'],
-                'topP'             : [ArgumentType.NUMBER, '--top-p',               '-p'],
-                'temperature'      : [ArgumentType.NUMBER, '--temperature',        '-t'],
-                'maxTokens'        : [ArgumentType.INTEGER, '--max-tokens',          '-x'],
+                'language'         : [ArgumentType.STRING   , '--language',           '-l'],
+                'model'            : [ArgumentType.STRING   , '--model',              '-m'],
+                'suffix'           : [ArgumentType.STRING   , '--suffix',             '-s'],
+                'stop'             : [ArgumentType.STRING   , '--stop',               '-S'],
+                'user'             : [ArgumentType.STRING   , '--user',               '-u'],
+                'logProbs'         : [ArgumentType.INTEGER  , '--logprobs',           '-L'],
+                'bestOf'           : [ArgumentType.INTEGER  , '--best-of',            '-b'],
+                'presencePenalty'  : [ArgumentType.NUMBER   , '--presence-penalty',   '-P'],
+                'frequencyPenalty' : [ArgumentType.NUMBER   , '--frequency-penalty',  '-f'],
+                'echo'             : [ArgumentType.BOOLEAN  , '--echo',               '-e'],
+                'n'                : [ArgumentType.INTEGER  , '--n',                  '-n'],
+                'topP'             : [ArgumentType.NUMBER   , '--top-p',              '-p'],
+                'temperature'      : [ArgumentType.NUMBER   , '--temperature',        '-t'],
+                'maxTokens'        : [ArgumentType.INTEGER  , '--max-tokens',         '-T'],
             }
         );
 
@@ -99,8 +100,9 @@ export async function main (
         const aiClient : OpenAiClient = new HttpOpenAiClient(OPENAI_API_KEY);
         const ai : HgAiCommandService = new HgAiCommandServiceImpl(aiClient);
 
+        if (isString(userArgs?.language)) ai.setLanguage(userArgs?.language);
         if (isString(userArgs?.model)) ai.setModel(userArgs?.model);
-        // if (isString(userArgs?.suffix)) ai.setSuffix(userArgs?.suffix);
+        if (isString(userArgs?.suffix)) ai.setSuffix(userArgs?.suffix);
         if (isString(userArgs?.stop)) ai.setStop(userArgs?.stop);
         if (isString(userArgs?.user)) ai.setUser(userArgs?.user);
         if (isNumber(userArgs?.logProbs)) ai.setLogProbs(userArgs?.logProbs);
@@ -167,6 +169,14 @@ export function getMainUsage (
     -x --max-tokens=INT         Maximum number of tokens to generate
 
 ...and ARG is one of:
+
+    hg ai desc[ribe] [verbose] CODE            Describe code [in detail]
+    hg ai doc[ument] CODE                      Document code
+    hg ai test CODE                            Write tests for code
+    hg ai comp[letion] PROMPT [..PROMPT2]      OpenAI completion request
+    hg ai edit INSTRUCTION [INPUT [..INPUT2]]  OpenAI edit request
+
+  If the argument is a file, it will be read and replaces.
 
   Environment variables:
 
