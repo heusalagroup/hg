@@ -16,6 +16,11 @@ cd hg
 npm i -g .
 ```
 
+If you intend to develop the command, run also:
+
+```
+git submodule update --init --recursive
+```
 
 ### Use it
 

@@ -1,15 +1,20 @@
 // Copyright (c) 2023. Heusala Group <info@heusalagroup.fi>. All rights reserved.
 
+import { ArgumentType } from "./fi/hg/core/cmd/types/ArgumentType";
 import { ProcessUtils } from "./fi/hg/core/ProcessUtils";
+
+// Must be first import to define environment variables before anything else
+ProcessUtils.initEnvFromDefaultFiles();
+
 import { COMMAND_NAME, LOG_LEVEL } from "./constants/runtime";
 
 import { LogService } from "./fi/hg/core/LogService";
+import { RequestClientImpl } from "./fi/hg/core/RequestClientImpl";
 import { LogLevel } from "./fi/hg/core/types/LogLevel";
 import { CommandExitStatus } from "./fi/hg/core/cmd/types/CommandExitStatus";
-import { RequestClient } from "./fi/hg/core/RequestClient";
-import { ArgumentType, CommandArgumentUtils } from "./fi/hg/core/cmd/utils/CommandArgumentUtils";
+import { CommandArgumentUtils } from "./fi/hg/core/cmd/utils/CommandArgumentUtils";
 import { ParsedCommandArgumentStatus } from "./fi/hg/core/cmd/types/ParsedCommandArgumentStatus";
-import { Headers } from "./fi/hg/core/request/Headers";
+import { Headers } from "./fi/hg/core/request/types/Headers";
 import { BUILD_USAGE_URL, BUILD_WITH_FULL_USAGE } from "./constants/build";
 import { HgCommandServiceImpl } from "./fi/hg/core/cmd/hg/HgCommandServiceImpl";
 import { HgCommandService } from "./fi/hg/core/cmd/hg/HgCommandService";
@@ -23,9 +28,6 @@ import { NodeRequestClient } from "./fi/hg/node/requestClient/node/NodeRequestCl
 import { isNumber } from "./fi/hg/core/types/Number";
 import { isBoolean } from "./fi/hg/core/types/Boolean";
 
-// Must be first import to define environment variables before anything else
-ProcessUtils.initEnvFromDefaultFiles();
-
 LogService.setLogLevel(LOG_LEVEL);
 ProcessUtils.setLogLevel(LOG_LEVEL);
 
@@ -35,19 +37,18 @@ NodeRequestClient.setLogLevel(LOG_LEVEL >= LogLevel.INFO ? LogLevel.NONE : LOG_L
 
 const LOG = LogService.createLogger('main');
 
-const OPENAI_API_KEY : string = parseNonEmptyString(process?.env?.OPENAI_API_KEY) ?? '';
+const OPENAI_API_KEY : string = parseNonEmptyString(process.env.OPENAI_API_KEY) ?? '';
 process.env.OPENAI_API_KEY = '';
 
 export async function main (
     args: string[] = []
 ) : Promise<CommandExitStatus> {
-
     try {
 
         HgNode.initialize();
 
         Headers.setLogLevel(LogLevel.INFO);
-        RequestClient.setLogLevel(LogLevel.INFO);
+        RequestClientImpl.setLogLevel(LogLevel.INFO);
 
         LOG.debug(`Loglevel as ${LogService.getLogLevelString()}`);
 
@@ -127,7 +128,6 @@ export async function main (
         LOG.error(`Fatal error: `, err);
         return CommandExitStatus.FATAL_ERROR;
     }
-
 }
 
 /**
