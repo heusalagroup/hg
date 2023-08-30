@@ -1,5 +1,7 @@
 // Copyright (c) 2023. Heusala Group <info@heusalagroup.fi>. All rights reserved.
 
+import { HgPackageCommandService } from "./fi/hg/core/cmd/pkg/HgPackageCommandService";
+import { HgPackageCommandServiceImpl } from "./fi/hg/core/cmd/pkg/HgPackageCommandServiceImpl";
 import { ArgumentType } from "./fi/hg/core/cmd/types/ArgumentType";
 import { ProcessUtils } from "./fi/hg/core/ProcessUtils";
 
@@ -98,6 +100,8 @@ export async function main (
             LOG.error('Error while shutting down the service: ', err);
         });
 
+        const pkg : HgPackageCommandService = HgPackageCommandServiceImpl.create();
+
         const aiClient : OpenAiClient = new HttpOpenAiClient(OPENAI_API_KEY);
         const ai : HgAiCommandService = new HgAiCommandServiceImpl(aiClient);
 
@@ -116,7 +120,11 @@ export async function main (
         if (isNumber(userArgs?.temperature)) ai.setTemperature(userArgs?.temperature);
         if (isNumber(userArgs?.maxTokens)) ai.setMaxTokens(userArgs?.maxTokens);
 
-        const hg : HgCommandService = new HgCommandServiceImpl(ai);
+        const hg : HgCommandService = HgCommandServiceImpl.create(
+            ai,
+            pkg,
+        );
+
         const ret = await hg.main(freeArgs);
         if (ret === CommandExitStatus.USAGE) {
             console.log(getMainUsage(scriptName));
@@ -175,19 +183,13 @@ export function getMainUsage (
     hg ai test CODE                            Write tests for code
     hg ai comp[letion] PROMPT [..PROMPT2]      OpenAI completion request
     hg ai edit INSTRUCTION [INPUT [..INPUT2]]  OpenAI edit request
+    
+    hg pkg sync [with-npm]                     Evaluate NPM package versions
 
   If the argument is a file, it will be read and replaces.
 
   Environment variables:
-
-    LOG_LEVEL as one of:
-    
-      ALL
-      DEBUG
-      INFO
-      WARN
-      ERROR
-      NONE
+    LOG_LEVEL as one of: ALL, DEBUG, INFO, WARN, ERROR, NONE
 `;
     } else {
         return `USAGE: ${/* @__PURE__ */scriptName} ARG(1) [...ARG(N)]
